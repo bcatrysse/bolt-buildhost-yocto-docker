@@ -1,0 +1,12 @@
+# docker/ubuntu/.dockerignore
+.git
+.gitignore
+*.deb
+*.tar.gz
+tmp/
+build/
+# Ignore everything not needed to build this image
+!Dockerfile
+!rootfs/**
+!docker-entrypoint.sh
+
