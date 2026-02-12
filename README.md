@@ -10,23 +10,25 @@ see https://github.com/bcatrysse?ecosystem=container&tab=packages&tab=packages&e
 
 When you have installed a docker environment on your system you can pull them as follows 
 ```
-docker pull ghcr.io/bcatrysse/yocto-ubuntu-22.04:Nov25
-docker pull ghcr.io/bcatrysse/yocto-ubuntu-20.04:Nov25
+docker pull ghcr.io/bcatrysse/yocto-ubuntu-22.04:feb26
+docker pull ghcr.io/bcatrysse/yocto-ubuntu-20.04:nov25
 ```
 
 ## Build docker container from Dockerfile
   Usage: ./scripts/build.sh "variant-folder-name" "tag"
 ```
-./scripts/build.sh ubuntu-22.04 Okt25
+./scripts/build.sh ubuntu-22.04 feb26
 ```
 ## Run yocto-buildhost container
- Usage: ./scripts/run.sh "image-name:tag" "hostname" 
+ Usage: ./scripts/run.sh "image-name:tag" "hostname"
+ If you do not specify "image-name" & "hostname" it will use default hardcoded in the script 
 ```
-./scripts/run.sh yocto-ubuntu-22.04:Okt25 yocto-u2204
+./scripts/run.sh yocto-ubuntu-22.04:feb26 yocto-u2204
+
 ```
 ## Push created docker container to GHCR
 ```
 echo "$GITHUB_TOKEN" | docker login ghcr.io -u <github-user> --password-stdin
-docker tag yocto-ubuntu-22.04:Okt25 ghcr.io/<github-user>/yocto-ubuntu-22.04:Okt25
-docker push ghcr.io/<github-user>/yocto-ubuntu-22.04:Okt25
+docker tag yocto-ubuntu-22.04:okt25 ghcr.io/<github-user>/yocto-ubuntu-22.04:okt25
+docker push ghcr.io/<github-user>/yocto-ubuntu-22.04:okt25
 ```

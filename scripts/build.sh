@@ -8,7 +8,11 @@ set -euo pipefail
 VARIANT="${1:-ubuntu-22.04}"   # folder under docker/
 TAG="${2:-latest}"             # image tag
 IMAGE_NAME="yocto-${VARIANT}"  # base name for image
-CONTEXT="docker/${VARIANT}"    # build context path
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+CONTEXT="${REPO_ROOT}/docker/${VARIANT}"
 DOCKERFILE="${CONTEXT}/Dockerfile"
 
 # Validate Dockerfile exists
