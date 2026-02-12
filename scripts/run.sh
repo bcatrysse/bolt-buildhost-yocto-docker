@@ -39,6 +39,6 @@ exec docker run -it --rm \
 
 # Customize to add/mount your own shared volumes into the container like 
 #        --volume /data:/data \
-# adding user to group_id 10 which is "wheel" group
+# adding user to group_id 10 which is "wheel" group on some distro
 # because "wheel" group members have sudo rights in container image via /etc/sudoers.d/99_wheel
 

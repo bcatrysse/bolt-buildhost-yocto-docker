@@ -86,7 +86,7 @@ RUN ln -fs /usr/share/zoneinfo/Universal /etc/localtime \
   && apt-get update \
   && apt-get install -y --no-install-recommends \
          g++-multilib gcc-multilib \
-  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+  && rm -rf /var/lib/apt/lists/*
 
 # ----------------------------------------------------------------------
 # Put everything we want to install here
@@ -106,7 +106,7 @@ RUN apt-get update \
   python3-jinja2 python3-pexpect python3-pip python3-subunit ripgrep \
   rsync screen socat sudo sysstat tar texinfo tk-dev tree unzip vim \
   wget xterm xz-utils zip zlib1g-dev zstd \
-  umoci erofs-utils cryptsetup 
+  nodejs umoci erofs-utils cryptsetup 
 # Notes
 #   git-core is a dummy package that calls git
 #   zstd provides pzstd
@@ -130,44 +130,6 @@ ENV LC_ALL en_US.UTF-8
 # Note that using && below to chain commands is essential to avoid failure
 RUN rm /bin/sh && ln -s bash /bin/sh
 
-#----------------------------------------------------------------------
-#install newer node.js, required for bolt tools
-#install nvm in way that it not installing in  ${HOME}/.nvm like in official installer because problematic for our situation (root user for docker build, regular user for docker run)
-#--- Choose a global, user-agnostic location for NVM ---
-ENV NVM_DIR=/opt/nvm
-RUN mkdir -p "$NVM_DIR"
-
-# Pin NVM to an exact tag (or commit) for reproducibility
-ARG NVM_VERSION=v0.40.4
-RUN git clone --depth=1 --branch "$NVM_VERSION" https://github.com/nvm-sh/nvm.git "$NVM_DIR"
-
-# System-wide loader so every login shell gets `nvm` if needed
-RUN printf '%s\n' \
-   '#!/bin/sh' \
-   'export NVM_DIR=/opt/nvm' \
-   '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"' \
-   '[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"' \
-   > /etc/profile.d/nvm.sh && chmod 0644 /etc/profile.d/nvm.sh
-
-# Install Node via nvm and set default
-# (must source in the same RUN layer)
-RUN . /etc/profile.d/nvm.sh \
-   && nvm install 20 \
-   && nvm alias default 20
-
-#Instead, create global symlinks so node/npm/npx work without any sourcing
-RUN . /etc/profile.d/nvm.sh \
-    && ver="$(nvm version default | sed 's/^v//')" \
-    && ln -sf "/opt/nvm/versions/node/v${ver}/bin/node"    /usr/local/bin/node \
-    && ln -sf "/opt/nvm/versions/node/v${ver}/bin/npm"     /usr/local/bin/npm  \
-    && ln -sf "/opt/nvm/versions/node/v${ver}/bin/npx"     /usr/local/bin/npx  \
-    && if [ -x "/opt/nvm/versions/node/v${ver}/bin/corepack" ]; then \
-      ln -sf "/opt/nvm/versions/node/v${ver}/bin/corepack" /usr/local/bin/corepack ; \
-    fi
-#
-# Give non-root users write access (ONLY if they must install new Node versions)
-# # If runtime users only use Node, skip this
-RUN chmod -R 0777 /opt/nvm
 # ----------------------------------------------------------------------
 # Install the google repo utility
 # disavantage of not using apt-get install repo is that deps might not be installed, added gnupng dirmngr in apt-get install list above to manually solve
@@ -179,11 +141,6 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # add "wheel" group (from local) for sudo
 #RUN groupadd -g 10 wheel
 COPY rootfs/99_wheel /etc/sudoers.d/99_wheel
-
-#the bolt-tool needs erofs-utils v1.7.1 and ubuntu22.4  provides v1.4
-#put in rootfs the erofs-utils-native version buildoutput from meta-bolt-tools/recipes-devtools/erofs-utils/erofs-utils_1.7.1.bb
-#copy and override that over what ubuntu22.4 (Luckily the dependency chain is small and still ok)
-COPY rootfs/usr /usr
 # ----------------------------------------------------------------------
 # Install the additional tools
 #RUN DEBIAN_FRONTEND=noninteractive apt install \
